@@ -1,0 +1,1 @@
+['./pdfs/contract_spring17.pdf', './pdfs/contract_summer17.pdf']

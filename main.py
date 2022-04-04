@@ -6,10 +6,11 @@ from PIL import Image
 from PyPDF2 import PdfFileMerger, PdfFileReader
 import os
 from pathlib import Path
+import shutil
+from fpdf import FPDF
 
-# input_filename = '/Users/alejandro/Downloads/computers/computers.md'
-# output_filename1 = 'pdfs/1.pdf'
 
+# take care of markdown files
 def markdown_to_pdf(input_filename, output_filename):
     with open(input_filename, 'r') as f:
         html_text = markdown(f.read(), output_format='html4')
@@ -18,28 +19,37 @@ def markdown_to_pdf(input_filename, output_filename):
 
 
 # taking care of jpg files
-# input_filename = '/Users/alejandro/Downloads/computers/network/TopOfNetworkRack.jpg'
-# output_filename2 = 'pdfs/2.pdf'
-
-
 def jpg_to_pdf(input_filename, output_filename):
     image_1 = Image.open(input_filename)
     im_1 = image_1.convert('RGB')
     im_1.save(output_filename)
 
 
-# # merge pdfs
-# # Call the PdfFileMerger
-# mergedObject = PdfFileMerger()
- 
-# # I had 116 files in the folder that had to be merged into a single document
-# # Loop through all of them and append their pages
-# mergedObject.append(PdfFileReader(output_filename1, 'rb'))
-# mergedObject.append(PdfFileReader(output_filename2, 'rb'))
- 
-# # Write all the files into a file which is named as shown below
-# mergedObject.write("mergedfilesoutput.pdf")
+def txt_to_pdf(input_filename, output_filename):
+    # from https://www.geeksforgeeks.org/convert-text-and-text-file-to-pdf-using-python/
+    # save FPDF() class into 
+    # a variable pdf
+    pdf = FPDF()   
+       
+    # Add a page
+    pdf.add_page()
+       
+    # set style and size of font 
+    # that you want in the pdf
+    pdf.set_font("Arial", size = 15)
+      
+    # open the text file in read mode
+    f = open("myfile.txt", "r")
+      
+    # insert the texts in pdf
+    for x in f:
+        pdf.cell(200, 10, txt = x, ln = 1, align = 'C')
+       
+    # save the pdf with name .pdf
+    pdf.output("mygfg.pdf")   
 
+
+# merge_pdfs
 def merge_pdfs(pdfs, output_filename):
     # Call the PdfFileMerger
     merger = PdfFileMerger()
@@ -58,7 +68,6 @@ def merge_pdfs(pdfs, output_filename):
 
 
 
- 
 # iterate over files in
 # that directory
 def recurse_directories(starting_directory):
@@ -66,12 +75,6 @@ def recurse_directories(starting_directory):
 
     for filename in sorted(os.scandir(starting_directory), key=lambda e: e.name.lower()):
         if filename.is_file():      # check if it's a file
-            # if filename.path.lower().endswith(('.png', '.jpg', '.jpeg')):   # check if it's a picture
-            #     print("jpg or png: " + filename.path)
-            # elif filename.path.lower().endswith(('.md')):                   # check if it's a MD file
-            #     print("MD: " + filename.path)
-            # else:
-            #     print("OTHER: " + filename.path)                            # print what isn't processed
             filenames.append(filename)
         
         if os.path.isdir(filename):                     # check if it's a directory and dive into it
@@ -83,12 +86,12 @@ def recurse_directories(starting_directory):
 
 pdfs = []
 # assign directory
-directory = '/Users/alejandro/Downloads/computers/'
+directory = '/Users/alejandro/Desktop/gitrepos/pika/pikawiki/archives'
 all_files = recurse_directories(directory)
 print(all_files)
 for count, filename in enumerate(all_files):
     output_filename = "./pdfs/" + filename.path[filename.path.rindex('/')+1:] # gets the file name
-    if filename.path.lower().endswith(('.png', '.jpg', '.jpeg')):   # check if it's a picture
+    if filename.path.lower().endswith(('.png', '.jpg', '.jpeg, .svg')):   # check if it's a picture
         print("jpg or png: " + filename.path)
         output_filename = "./pdfs/" + Path(output_filename).stem + ".pdf"
         jpg_to_pdf(filename.path, output_filename)
@@ -98,8 +101,21 @@ for count, filename in enumerate(all_files):
         output_filename = "./pdfs/" + Path(output_filename).stem + ".pdf"
         markdown_to_pdf(filename.path, output_filename)
         pdfs.append(output_filename)
+    elif filename.path.lower().endswith(('.pdf')):                  # check if it's a PDF file
+        print("PDF: " + filename.path)
+        output_filename = "./pdfs/" + Path(output_filename).stem + ".pdf"
+        shutil.copyfile(filename.path, output_filename)
+        pdfs.append(output_filename)
+    elif filename.path.lower().endswith(('.tex')):                  # check for tex files
+        print("TEX: " + filename.path)
+        output_filename = "./pdfs/" + Path(output_filename).stem + ".pdf"
+        os.system("pdflatex"+ " " + filename.path)
+        os.system("mv " +Path(output_filename).stem + ".pdf output_filename")
+        pdfs.append(output_filename)
     else:
-        print("OTHER: " + filename.path)                            # print what isn't processed
+        print("OTHER: " + filename.path)                            # print what is just processed as text
+
+
 text_file = open("pdf_list.txt", "w")
 n = text_file.write(str(pdfs))
 text_file.close()
