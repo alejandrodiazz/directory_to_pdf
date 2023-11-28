@@ -63,7 +63,7 @@ def merge_pdfs(pdfs, output_filename):
     for pdf in pdfs:
         print(pdf)
         # NEW LINE import_outline=False may not be necessary
-        merger.append(pdf, import_outline=False ) # had to add the import bookmarks false for some reason
+        merger.append(pdf, import_outline=False) # had to add the import bookmarks false for some reason
         # OLD LINE: merger.append(pdf, import_bookmarks=False ) # had to add the import bookmarks false for some reason
      
     # Write all the files into a file which is named as shown below
