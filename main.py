@@ -3,7 +3,7 @@
 from markdown import markdown
 import pdfkit
 from PIL import Image
-from PyPDF2 import PdfFileMerger, PdfFileReader
+from PyPDF2 import PdfMerger, PdfFileReader
 import os
 from pathlib import Path
 import shutil
@@ -55,14 +55,16 @@ def txt_to_pdf(input_filename, output_filename):
 
 # merge_pdfs
 def merge_pdfs(pdfs, output_filename):
-    # Call the PdfFileMerger
-    merger = PdfFileMerger()
+    # Call the PdfMerger
+    merger = PdfMerger()
 
     # Loop through all of them and append their pages
     print("PDFs TO BE MERGED")
     for pdf in pdfs:
         print(pdf)
-        merger.append(pdf, import_bookmarks=False ) # had to add the import bookmarks false for some reason
+        # NEW LINE import_outline=False may not be necessary
+        merger.append(pdf, import_outline=False ) # had to add the import bookmarks false for some reason
+        # OLD LINE: merger.append(pdf, import_bookmarks=False ) # had to add the import bookmarks false for some reason
      
     # Write all the files into a file which is named as shown below
     merger.write(output_filename)
@@ -87,7 +89,7 @@ def recurse_directories(starting_directory):
             
 
 pdfs = []
-directory = '/Users/alejandro/Desktop/gitrepos/pika/pikawiki' # assign directory
+directory = '/Users/alejandro/Desktop/gitrepos/pika/pikawiki' # ASSIGN DIRECTORY
 all_files = recurse_directories(directory)
 for count, filename in enumerate(all_files):
     output_filename = "./pdfs/" + filename.path[filename.path.rindex('/')+1:] # gets the file name
